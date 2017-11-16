@@ -47,7 +47,7 @@ class JavalinAppTest {
     @Test
     fun testPostCreatesItemWithStatusAndUrl() {
         val input = TodoItem(title = "Hello")
-        Unirest.post("http://localhost:${app.port()}/").body(objectMapper.writeValueAsBytes(input)).asJson().rawBody?.let {
+        Unirest.post("http://localhost:${app.port()}/").body(bytesFor(input)).asJson().rawBody?.let {
             val output : TodoItem = objectMapper.readValue(it, object: TypeReference<TodoItem>() {})
             assertEquals(input.title, output.title)
             assertEquals(false, output.completed)
@@ -58,7 +58,7 @@ class JavalinAppTest {
     @Test
     fun testAccessingAnItemWithItsUrl() {
         val input = TodoItem(title = "Hello")
-        Unirest.post("http://localhost:${app.port()}/").body(objectMapper.writeValueAsBytes(input)).asJson().rawBody?.let {
+        Unirest.post("http://localhost:${app.port()}/").body(bytesFor(input)).asJson().rawBody?.let {
             val item : TodoItem = objectMapper.readValue(it, object: TypeReference<TodoItem>() {})
             Unirest.get(item.url).asJson().rawBody?.let {
                 val output : TodoItem = objectMapper.readValue(it, object: TypeReference<TodoItem>() {})
@@ -80,11 +80,54 @@ class JavalinAppTest {
     @Test
     fun testListingOfItems() {
         val input = TodoItem(title = "Hello")
-        Unirest.post("http://localhost:${app.port()}/").body(objectMapper.writeValueAsBytes(input)).asJson()
+        Unirest.post("http://localhost:${app.port()}/").body(bytesFor(input)).asJson()
 
         Unirest.get("http://localhost:${app.port()}/").asJson().rawBody?.let {
             val todoItems: List<TodoItem> = objectMapper.readValue(it, object: TypeReference<List<TodoItem>>() {})
             assertEquals(1, todoItems.size)
         }
     }
+
+    @Test
+    fun testChangeTitleByPatching() {
+        val input = TodoItem(title = "Hello")
+        Unirest.post("http://localhost:${app.port()}/").body(bytesFor(input)).asJson().rawBody?.let {
+            val item: TodoItem = objectMapper.readValue(it, object : TypeReference<TodoItem>() {})
+            Unirest.patch(item.url)
+                .body(bytesFor(mapOf("title" to "New title"))).asJson().rawBody?.let {
+                val updatedItem: TodoItem = objectMapper.readValue(it, object: TypeReference<TodoItem>() {})
+                assertEquals("New title", updatedItem.title)
+            }
+        }
+    }
+
+    @Test
+    fun testChangeCompletednessByPatching() {
+        val input = TodoItem(title = "Hello")
+        Unirest.post("http://localhost:${app.port()}/").body(bytesFor(input)).asJson().rawBody?.let {
+            val item: TodoItem = objectMapper.readValue(it, object : TypeReference<TodoItem>() {})
+            assertEquals(false, item.completed)
+            Unirest.patch(item.url)
+                .body(bytesFor(mapOf("completed" to true))).asJson().rawBody?.let {
+                val updatedItem: TodoItem = objectMapper.readValue(it, object: TypeReference<TodoItem>() {})
+                assertEquals(true, updatedItem.completed)
+            }
+        }
+    }
+
+    @Test
+    fun testDeleteAnItem() {
+        val input = TodoItem(title = "Hello")
+        Unirest.post("http://localhost:${app.port()}/").body(bytesFor(input)).asJson().rawBody?.let {
+            val item: TodoItem = objectMapper.readValue(it, object : TypeReference<TodoItem>() {})
+            assertEquals(false, item.completed)
+            Unirest.delete(item.url).asJson()
+        }
+        Unirest.get("http://localhost:${app.port()}/").asJson().rawBody?.let {
+            val todoItems: List<TodoItem> = objectMapper.readValue(it, object: TypeReference<List<TodoItem>>() {})
+            assertEquals(0, todoItems.size)
+        }
+    }
+
+    private fun bytesFor(input: Any) = objectMapper.writeValueAsBytes(input)
 }

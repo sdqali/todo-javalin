@@ -27,6 +27,21 @@ class TodoService {
     fun get(id: UUID): TodoItem? {
         return items.find { it.id == id}
     }
+
+    fun patch(id: UUID, finalState: Map<String, Any>): TodoItem? {
+        return get(id)?.let { item ->
+            finalState["title"]?.let { item.title = it.toString() }
+            finalState["completed"]?.let { item.completed = it.toString().toBoolean() }
+            return item
+        }
+    }
+
+    fun delete(id: UUID): UUID? {
+        return get(id)?.let { item ->
+            items.remove(item)
+            return item.id
+        }
+    }
 }
 
 data class TodoItem(

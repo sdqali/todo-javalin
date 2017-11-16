@@ -29,6 +29,14 @@ class JavalinApp {
             ctx.json(todoService.list())
         }
 
+        app.post("/") { ctx ->
+            ctx.json(todoService.add(ctx.bodyAsClass(TodoItem::class.java)))
+        }
+
+        app.delete("/") { ctx ->
+            ctx.json(todoService.clear())
+        }
+
         app.get("/:id") { ctx ->
             val foundItem = todoService.get(UUID.fromString(ctx.param("id")))
             foundItem?.let {
@@ -39,12 +47,24 @@ class JavalinApp {
             }
         }
 
-        app.post("/") { ctx ->
-            ctx.json(todoService.add(ctx.bodyAsClass(TodoItem::class.java)))
+        app.patch("/:id") { ctx ->
+            val updatedItem = todoService.patch(UUID.fromString(ctx.param("id")), ctx.bodyAsClass(Map::class.java).toMap() as Map<String, Any>)
+            updatedItem?.let {
+                ctx.json(it)
+            }
+            if(updatedItem == null) {
+                ctx.status(404)
+            }
         }
 
-        app.delete("/") { ctx ->
-            ctx.json(todoService.clear())
+        app.delete("/:id") { ctx ->
+            val deletedId = todoService.delete(UUID.fromString(ctx.param("id")))
+            deletedId?.let {
+                ctx.status(200)
+            }
+            if(deletedId == null) {
+                ctx.status(404)
+            }
         }
 
         return app
