@@ -17,11 +17,9 @@ class TodoService {
     }
 
     fun add(input: TodoItem): TodoItem {
-        return input.title?.let {
-            val item = TodoItem(title = input.title, order = input.order)
-            items.add(item)
-            return item
-        }
+        val item = TodoItem(title = input.title, order = input.order)
+        items.add(item)
+        return item
     }
 
     fun get(id: UUID): TodoItem? {
