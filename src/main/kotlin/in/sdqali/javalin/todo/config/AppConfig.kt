@@ -7,7 +7,7 @@ object AppConfig {
     }
 
     fun rootUrl(): String {
-        System.getenv("ROOT_URL")?.let { return it }
+        System.getenv("HEROKU_APP_NAME")?.let { return "https://$it.herokuapp.com" }
         return "http://localhost:${port()}"
     }
 }
