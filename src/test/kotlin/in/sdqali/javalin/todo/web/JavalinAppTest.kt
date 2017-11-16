@@ -32,6 +32,11 @@ class JavalinAppTest {
         }
     }
 
+    @Before
+    fun cleanup() {
+        Unirest.delete("http://localhost:${app.port()}/").asJson()
+    }
+
     @Test
     fun testGetReturnsListOfTodoItems() {
         Unirest.get("http://localhost:${app.port()}/").asJson().rawBody?.let {
