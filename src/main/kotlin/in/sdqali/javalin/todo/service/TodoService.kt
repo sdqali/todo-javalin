@@ -18,7 +18,7 @@ class TodoService {
 
     fun add(input: TodoItem): TodoItem {
         return input.title?.let {
-            val item = TodoItem(title = input.title)
+            val item = TodoItem(title = input.title, order = input.order)
             items.add(item)
             return item
         }
@@ -32,6 +32,7 @@ class TodoService {
         return get(id)?.let { item ->
             finalState["title"]?.let { item.title = it.toString() }
             finalState["completed"]?.let { item.completed = it.toString().toBoolean() }
+            finalState["order"]?.let { item.order = it.toString().toInt() }
             return item
         }
     }

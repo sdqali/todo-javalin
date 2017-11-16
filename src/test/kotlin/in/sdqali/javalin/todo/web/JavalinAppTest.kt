@@ -46,11 +46,12 @@ class JavalinAppTest {
 
     @Test
     fun testPostCreatesItemWithStatusAndUrl() {
-        val input = TodoItem(title = "Hello")
+        val input = TodoItem(title = "Hello", order = 456)
         Unirest.post("http://localhost:${app.port()}/").body(bytesFor(input)).asJson().rawBody?.let {
             val output : TodoItem = objectMapper.readValue(it, object: TypeReference<TodoItem>() {})
             assertEquals(input.title, output.title)
             assertEquals(false, output.completed)
+            assertEquals(456, output.order)
             assertNotNull(output.url)
         }
     }
@@ -111,6 +112,20 @@ class JavalinAppTest {
                 .body(bytesFor(mapOf("completed" to true))).asJson().rawBody?.let {
                 val updatedItem: TodoItem = objectMapper.readValue(it, object: TypeReference<TodoItem>() {})
                 assertEquals(true, updatedItem.completed)
+            }
+        }
+    }
+
+    @Test
+    fun testChangeOrderByPatching() {
+        val input = TodoItem(title = "Hello", order = 123)
+        Unirest.post("http://localhost:${app.port()}/").body(bytesFor(input)).asJson().rawBody?.let {
+            val item: TodoItem = objectMapper.readValue(it, object : TypeReference<TodoItem>() {})
+            assertEquals(false, item.completed)
+            Unirest.patch(item.url)
+                .body(bytesFor(mapOf("order" to 765))).asJson().rawBody?.let {
+                val updatedItem: TodoItem = objectMapper.readValue(it, object: TypeReference<TodoItem>() {})
+                assertEquals(765, updatedItem.order)
             }
         }
     }
