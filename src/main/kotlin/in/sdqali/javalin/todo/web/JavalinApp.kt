@@ -1,5 +1,6 @@
 package `in`.sdqali.javalin.todo.web
 
+import `in`.sdqali.javalin.todo.config.AppConfig
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import io.javalin.Javalin
@@ -16,6 +17,7 @@ class JavalinApp {
         JavalinJacksonPlugin.configure(objectMapper)
         val app = Javalin.create()
             .enableCorsForOrigin()
+            .port(AppConfig.port())
             .start()
         app.before("*") { ctx ->
             (ctx.header(Header.ORIGIN) ?: ctx.header(Header.REFERER))?.let {
