@@ -28,6 +28,7 @@ class JavalinAppTest {
         }
 
         @AfterClass @JvmStatic fun teardown() {
+            app.stop()
         }
     }
 
